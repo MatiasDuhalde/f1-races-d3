@@ -6,6 +6,6 @@ export interface Circuit {
   country: string;
   lat: number;
   lng: number;
-  alt: number;
+  alt?: number;
   url: string;
 }

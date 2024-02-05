@@ -36,7 +36,7 @@ h1 {
 }
 
 #app {
-  max-width: 1280px;
+  width: 100%;
   margin: 0 auto;
   padding: 2rem;
   text-align: center;
@@ -59,10 +59,6 @@ h1 {
   padding: 2em;
 }
 
-.read-the-docs {
-  color: #888;
-}
-
 button {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -80,6 +76,20 @@ button:hover {
 button:focus,
 button:focus-visible {
   outline: 4px auto -webkit-focus-ring-color;
+}
+
+#map-container {
+  width: 100%;
+  height: 500px;
+}
+
+.country {
+  fill: #f9f9f9;
+  stroke: #213547;
+}
+
+.country:hover {
+  fill: #747bff;
 }
 
 @media (prefers-color-scheme: light) {
