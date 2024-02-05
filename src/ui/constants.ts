@@ -1,0 +1,10 @@
+export const APP_CONTAINER_ID = 'app';
+export const DASHBOARD_CONTAINER_ID = 'dashboard-container';
+export const TITLE_CONTAINER_ID = 'title-container';
+export const MAP_CONTAINER_ID = 'map-container';
+export const TIMELINE_CONTAINER_ID = 'timeline-container';
+export const WORLD_MAP_ID = 'world-map';
+export const CIRCUIT_CLASS = 'circuit';
+export const COUNTRY_CLASS = 'country';
+export const CIRCUIT_MARKER_CLASS = 'circuit-marker';
+export const TOOLTIP_CLASS = 'tooltip';

@@ -1,6 +1,5 @@
 import * as d3 from 'd3';
-import { Circuit } from './types/circuit';
-import { Driver } from './types/drivers';
+import type { Circuit, Driver, Season } from './types';
 import { numberOrUndefined, stringOrUndefined } from './utils';
 
 export class DataService {
@@ -66,6 +65,16 @@ export class DataService {
         surname: d.surname,
         dob: new Date(d.dob),
         nationality: d.nationality,
+        url: d.url,
+      };
+    });
+  }
+
+  public async getSeasons(): Promise<Season[]> {
+    const result = await d3.csv(DataService.SEASONS_PATH);
+    return result.map((d) => {
+      return {
+        year: +d.year,
         url: d.url,
       };
     });
