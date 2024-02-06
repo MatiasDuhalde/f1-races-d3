@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { Circuit, DataService, Race, Season } from '../../data';
+import { Circuit, DataService, Race } from '../../data';
 import { App } from '../app';
 import {
   CIRCUIT_MARKER_CLASS,
@@ -97,11 +97,6 @@ export class WorldMap {
   private async getCircuits(): Promise<Circuit[]> {
     const dataService = DataService.getInstance();
     return dataService.getCircuits();
-  }
-
-  private async getSeasons(): Promise<Season[]> {
-    const dataService = DataService.getInstance();
-    return dataService.getSeasons();
   }
 
   private async getRaces(): Promise<Race[]> {
