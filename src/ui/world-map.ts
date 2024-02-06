@@ -116,7 +116,6 @@ export class WorldMap {
       // A better solution would be to standardize the country names to ISO code using some library
       const shortCountryName = feature.properties.brk_name;
       const countryName = feature.properties.name;
-      console.log(feature.properties);
       if (
         circuits.some(
           (circuit) => circuit.country === countryName || circuit.country === shortCountryName,
