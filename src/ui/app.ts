@@ -27,5 +27,6 @@ export const bootstrapApp = async (): Promise<void> => {
   const worldMap = new WorldMap();
 
   await worldMap.drawWorldMap();
-  await worldMap.drawCircuits();
+  await worldMap.drawYearSelector();
+  await worldMap.drawCircuitMarkers();
 };

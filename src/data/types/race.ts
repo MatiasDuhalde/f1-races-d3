@@ -5,7 +5,7 @@ export interface Race {
   circuitId: number;
   name: string;
   date: Date;
-  time: string;
+  time?: string;
   url: string;
   fp1Date?: Date;
   fp1Time?: string;

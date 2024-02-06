@@ -1,6 +1,6 @@
 import * as d3 from 'd3';
-import type { Circuit, Driver, Season } from './types';
-import { numberOrUndefined, stringOrUndefined } from './utils';
+import type { Circuit, Driver, Race, Season } from './types';
+import { dateOrUndefined, numberOrUndefined, stringOrUndefined } from './utils';
 
 export class DataService {
   private static readonly BASE_PATH = '/data/f1/';
@@ -76,6 +76,32 @@ export class DataService {
       return {
         year: +d.year,
         url: d.url,
+      };
+    });
+  }
+
+  public async getRaces(): Promise<Race[]> {
+    const result = await d3.csv(DataService.RACES_PATH);
+    return result.map((d) => {
+      return {
+        raceId: +d.raceId,
+        year: +d.year,
+        round: +d.round,
+        circuitId: +d.circuitId,
+        name: d.name,
+        date: new Date(d.date),
+        time: stringOrUndefined(d.time),
+        url: d.url,
+        fp1Date: dateOrUndefined(d.fp1Date),
+        fp1Time: stringOrUndefined(d.fp1Time),
+        fp2Date: dateOrUndefined(d.fp2Date),
+        fp2Time: stringOrUndefined(d.fp2Time),
+        fp3Date: dateOrUndefined(d.fp3Date),
+        fp3Time: stringOrUndefined(d.fp3Time),
+        qualiDate: dateOrUndefined(d.qualiDate),
+        qualiTime: stringOrUndefined(d.qualiTime),
+        sprintDate: dateOrUndefined(d.sprintDate),
+        sprintTime: stringOrUndefined(d.sprintTime),
       };
     });
   }

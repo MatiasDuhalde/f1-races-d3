@@ -8,3 +8,4 @@ export const CIRCUIT_CLASS = 'circuit';
 export const COUNTRY_CLASS = 'country';
 export const CIRCUIT_MARKER_CLASS = 'circuit-marker';
 export const TOOLTIP_CLASS = 'tooltip';
+export const CIRCUIT_MARKERS_ID = 'circuit-markers';

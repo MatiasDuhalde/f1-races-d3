@@ -1,9 +1,11 @@
 import * as d3 from 'd3';
-import { Circuit, DataService } from '../data';
+import { Circuit, DataService, Race, Season } from '../data';
 import {
+  CIRCUIT_MARKERS_ID,
   CIRCUIT_MARKER_CLASS,
   COUNTRY_CLASS,
   MAP_CONTAINER_ID,
+  TIMELINE_CONTAINER_ID,
   TOOLTIP_CLASS,
   WORLD_MAP_ID,
 } from './constants';
@@ -12,6 +14,7 @@ import { getElementByIdOrThrow } from './utils';
 export class WorldMap {
   private projection: d3.GeoProjection;
   private path: d3.GeoPath;
+  private selectedYear: number | undefined = undefined;
 
   public constructor() {
     this.projection = d3.geoNaturalEarth1();
@@ -23,12 +26,31 @@ export class WorldMap {
     return dataService.getWorldMapGeoJson();
   }
 
-  public getElement(): HTMLDivElement {
+  private async getCircuits(): Promise<Circuit[]> {
+    const dataService = DataService.getInstance();
+    return dataService.getCircuits();
+  }
+
+  private async getSeasons(): Promise<Season[]> {
+    const dataService = DataService.getInstance();
+    return dataService.getSeasons();
+  }
+
+  private async getRaces(): Promise<Race[]> {
+    const dataService = DataService.getInstance();
+    return dataService.getRaces();
+  }
+
+  public getMapContainerElement(): HTMLDivElement {
     return getElementByIdOrThrow<HTMLDivElement>(MAP_CONTAINER_ID);
   }
 
+  public getTimelineContainerElement(): HTMLDivElement {
+    return getElementByIdOrThrow<HTMLDivElement>(TIMELINE_CONTAINER_ID);
+  }
+
   public async drawWorldMap(): Promise<void> {
-    const containerElement = this.getElement();
+    const containerElement = this.getMapContainerElement();
 
     const geoJson = await this.getWorldMapGeoJson();
 
@@ -55,15 +77,28 @@ export class WorldMap {
     containerElement.appendChild(node);
   }
 
-  public async drawCircuits(): Promise<void> {
-    const dataService = DataService.getInstance();
-    const circuits = await dataService.getCircuits();
+  public async drawCircuitMarkers(): Promise<void> {
+    const svg = d3.select('#' + WORLD_MAP_ID);
 
-    const svg = d3.select('#world-map');
+    const g = svg.select('#' + CIRCUIT_MARKERS_ID);
 
-    const g = svg.append('g');
+    if (g.empty()) {
+      svg.append('g').attr('id', CIRCUIT_MARKERS_ID);
+    }
 
-    g.selectAll('circle')
+    let circuits = await this.getCircuits();
+
+    if (this.selectedYear) {
+      let races = await this.getRaces();
+      races = d3.filter(races, (race) => race.year === this.selectedYear);
+      circuits = circuits.filter((circuit) =>
+        races.some((race) => race.circuitId === circuit.circuitId),
+      );
+    }
+
+    // FIXME: Circuit markers are not being displayed on first render
+
+    g.selectAll('.' + CIRCUIT_MARKER_CLASS)
       .data(circuits)
       .join('circle')
       .attr('class', CIRCUIT_MARKER_CLASS)
@@ -75,18 +110,32 @@ export class WorldMap {
       })
       .attr('r', 4);
 
-    svg.selectAll('.country').attr('class', (feature: any) => {
-      const countryName = feature.properties.brk_name;
+    svg.selectAll('.' + COUNTRY_CLASS).attr('class', (feature: any) => {
+      // FIXME: This is a hack to get the country name from the GeoJSON properties
+      // It does not work for all countries
+      // A better solution would be to standardize the country names to ISO code using some library
+      const shortCountryName = feature.properties.brk_name;
+      const countryName = feature.properties.name;
       console.log(feature.properties);
-      if (circuits.some((circuit) => circuit.country === countryName))
+      if (
+        circuits.some(
+          (circuit) => circuit.country === countryName || circuit.country === shortCountryName,
+        )
+      )
         return `${COUNTRY_CLASS} active`;
-      return 'country';
+      return COUNTRY_CLASS;
     });
 
-    const tooltip = d3
-      .select('#' + MAP_CONTAINER_ID)
-      .append('div')
-      .attr('class', TOOLTIP_CLASS);
+    // select or create tooltip
+    let tooltip: d3.Selection<HTMLDivElement, unknown, HTMLElement, unknown> = d3.select(
+      '.' + TOOLTIP_CLASS,
+    );
+    if (tooltip.empty()) {
+      tooltip = d3
+        .select('#' + MAP_CONTAINER_ID)
+        .append('div')
+        .attr('class', TOOLTIP_CLASS);
+    }
 
     g.selectAll('.' + CIRCUIT_MARKER_CLASS)
       .on('mouseenter', (_, data: unknown) => {
@@ -99,5 +148,42 @@ export class WorldMap {
       .on('mouseleave', () => {
         return tooltip.style('visibility', 'hidden');
       });
+  }
+
+  public async drawYearSelector(): Promise<void> {
+    const seasons = await this.getSeasons();
+
+    const [min, max] = d3.extent(seasons, (d) => d.year) as [number, number];
+
+    this.selectedYear = max;
+
+    const containerElement = this.getTimelineContainerElement();
+
+    const input = document.createElement('input');
+    input.type = 'range';
+    input.id = 'year-selector';
+    input.name = 'year';
+    input.min = min.toString();
+    input.max = max.toString();
+    input.value = this.selectedYear.toString();
+
+    const label = document.createElement('label');
+    label.htmlFor = 'year-selector';
+    label.textContent = seasons[seasons.length - 1].year.toString();
+
+    containerElement.appendChild(input);
+    containerElement.appendChild(label);
+
+    input.addEventListener('input', (event) => {
+      const year = (event.target as HTMLInputElement).value;
+      label.textContent = year;
+    });
+
+    input.addEventListener('change', (event) => {
+      const year = (event.target as HTMLInputElement).value;
+      label.textContent = year;
+      this.selectedYear = +year;
+      this.drawCircuitMarkers();
+    });
   }
 }
