@@ -1,29 +1,87 @@
 import * as d3 from 'd3';
 import { Circuit, DataService, Race, Season } from '../data';
 import {
-  CIRCUIT_MARKERS_ID,
   CIRCUIT_MARKER_CLASS,
+  CIRCUIT_MARKER_GROUP_ID,
   COUNTRY_CLASS,
-  MAP_CONTAINER_ID,
-  TIMELINE_CONTAINER_ID,
-  TOOLTIP_CLASS,
-  WORLD_MAP_ID,
+  COUNTRY_GROUP_ID,
+  WORLD_MAP_CONTAINER_ID,
+  WORLD_MAP_CONTROLS_CONTAINER_ID,
+  WORLD_MAP_SVG_ID,
+  WORLD_MAP_TOOLTIP_ID,
 } from './constants';
-import { getElementByIdOrThrow } from './utils';
+import './world-map.scss';
 
 export class WorldMap {
   private projection: d3.GeoProjection;
   private path: d3.GeoPath;
-  private selectedYear: number | undefined = undefined;
+
+  private containerElement: HTMLDivElement | undefined = undefined;
+  private worldMapContainerElement: HTMLDivElement;
+  private controlsContainerElement: HTMLDivElement;
+  private tooltipElement: HTMLDivElement;
+
+  private mapSvg: SVGSVGElement;
+  private circuitMarkerGroup: SVGGElement;
+  private countryGroup: SVGGElement;
+
+  private mapResizeObserver: ResizeObserver;
+
+  private geoJson: d3.ExtendedFeatureCollection;
+
+  private circuits: Circuit[] = [];
+  private selectedYear: number | null;
 
   public constructor() {
     this.projection = d3.geoNaturalEarth1();
     this.path = d3.geoPath().projection(this.projection);
+
+    this.worldMapContainerElement = document.createElement('div');
+    this.worldMapContainerElement.id = WORLD_MAP_CONTAINER_ID;
+    this.controlsContainerElement = document.createElement('div');
+    this.controlsContainerElement.id = WORLD_MAP_CONTROLS_CONTAINER_ID;
+    this.tooltipElement = document.createElement('div');
+    this.tooltipElement.className = WORLD_MAP_TOOLTIP_ID;
+
+    const svg = d3.create('svg').attr('id', WORLD_MAP_SVG_ID);
+
+    const countryGroup = svg.append('g').attr('id', COUNTRY_GROUP_ID);
+    const circuitMarkerGroup = svg.append('g').attr('id', CIRCUIT_MARKER_GROUP_ID);
+
+    this.mapSvg = svg.node() as SVGSVGElement;
+    this.countryGroup = countryGroup.node() as SVGGElement;
+    this.circuitMarkerGroup = circuitMarkerGroup.node() as SVGGElement;
+
+    this.worldMapContainerElement.appendChild(this.mapSvg);
+
+    this.mapResizeObserver = new ResizeObserver(() => {
+      // Call function resizeMap when the map container is resized
+      this.resizeMap();
+    });
+    this.mapResizeObserver.observe(this.worldMapContainerElement);
+
+    this.geoJson = { type: 'FeatureCollection', features: [] };
+
+    this.circuits = [];
+    this.selectedYear = null;
+  }
+
+  public async drawWorldMap(element: HTMLDivElement): Promise<void> {
+    this.containerElement = element;
+
+    this.containerElement.appendChild(this.worldMapContainerElement);
+    this.containerElement.appendChild(this.controlsContainerElement);
+    this.containerElement.appendChild(this.tooltipElement);
+
+    await this.drawCountries();
+    await this.drawControls();
+    await this.drawCircuitMarkers();
   }
 
   private async getWorldMapGeoJson(): Promise<d3.ExtendedFeatureCollection> {
     const dataService = DataService.getInstance();
-    return dataService.getWorldMapGeoJson();
+    this.geoJson = await dataService.getWorldMapGeoJson();
+    return this.geoJson;
   }
 
   private async getCircuits(): Promise<Circuit[]> {
@@ -41,114 +99,40 @@ export class WorldMap {
     return dataService.getRaces();
   }
 
-  public getMapContainerElement(): HTMLDivElement {
-    return getElementByIdOrThrow<HTMLDivElement>(MAP_CONTAINER_ID);
-  }
-
-  public getTimelineContainerElement(): HTMLDivElement {
-    return getElementByIdOrThrow<HTMLDivElement>(TIMELINE_CONTAINER_ID);
-  }
-
-  public async drawWorldMap(): Promise<void> {
-    const containerElement = this.getMapContainerElement();
-
+  private async resizeMap(): Promise<void> {
+    const { height, width } = this.worldMapContainerElement.getBoundingClientRect();
     const geoJson = await this.getWorldMapGeoJson();
 
-    const svg = d3
-      .create('svg')
-      .attr('id', WORLD_MAP_ID)
-      .style('width', '100%')
-      .style('height', '100%');
-
-    const { height, width } = containerElement.getBoundingClientRect();
-
     this.projection.fitSize([width, height], geoJson);
+    const svg = d3.select(this.mapSvg);
 
-    const g = svg.append('g');
+    svg
+      .attr('width', width)
+      .attr('height', height)
+      .selectAll('.' + COUNTRY_CLASS)
+      .attr('d', this.path as any);
 
-    g.selectAll('path')
+    this.placeCircuitMarkers();
+  }
+
+  private async drawCountries(): Promise<void> {
+    const geoJson = await this.getWorldMapGeoJson();
+
+    const countryGroup = d3.select(this.countryGroup);
+
+    countryGroup
+      .selectAll('path')
       .data(geoJson.features)
       .join('path')
       .attr('class', COUNTRY_CLASS)
       .attr('d', this.path);
-
-    const node = svg.node() as Node;
-
-    containerElement.appendChild(node);
   }
 
-  public async drawCircuitMarkers(): Promise<void> {
-    const svg = d3.select('#' + WORLD_MAP_ID);
-
-    const g = svg.select('#' + CIRCUIT_MARKERS_ID);
-
-    if (g.empty()) {
-      svg.append('g').attr('id', CIRCUIT_MARKERS_ID);
-    }
-
-    let circuits = await this.getCircuits();
-
-    if (this.selectedYear) {
-      let races = await this.getRaces();
-      races = d3.filter(races, (race) => race.year === this.selectedYear);
-      circuits = circuits.filter((circuit) =>
-        races.some((race) => race.circuitId === circuit.circuitId),
-      );
-    }
-
-    // FIXME: Circuit markers are not being displayed on first render
-
-    g.selectAll('.' + CIRCUIT_MARKER_CLASS)
-      .data(circuits)
-      .join('circle')
-      .attr('class', CIRCUIT_MARKER_CLASS)
-      .attr('cx', (d) => {
-        return this.projection([d.lng, d.lat])![0];
-      })
-      .attr('cy', (d) => {
-        return this.projection([d.lng, d.lat])![1];
-      })
-      .attr('r', 4);
-
-    svg.selectAll('.' + COUNTRY_CLASS).attr('class', (feature: any) => {
-      const countryCode = feature.properties.iso_a2_eh;
-      if (circuits.some((circuit) => circuit.country === countryCode))
-        return `${COUNTRY_CLASS} active`;
-      return COUNTRY_CLASS;
-    });
-
-    // select or create tooltip
-    let tooltip: d3.Selection<HTMLDivElement, unknown, HTMLElement, unknown> = d3.select(
-      '.' + TOOLTIP_CLASS,
-    );
-    if (tooltip.empty()) {
-      tooltip = d3
-        .select('#' + MAP_CONTAINER_ID)
-        .append('div')
-        .attr('class', TOOLTIP_CLASS);
-    }
-
-    g.selectAll('.' + CIRCUIT_MARKER_CLASS)
-      .on('mouseenter', (_, data: unknown) => {
-        tooltip.text((data as Circuit).name);
-        return tooltip.style('visibility', 'visible');
-      })
-      .on('mousemove', (event) => {
-        return tooltip.style('top', `${event.pageY + 20}px`).style('left', `${event.pageX + 20}px`);
-      })
-      .on('mouseleave', () => {
-        return tooltip.style('visibility', 'hidden');
-      });
-  }
-
-  public async drawYearSelector(): Promise<void> {
+  private async drawControls(): Promise<void> {
     const seasons = await this.getSeasons();
-
     const [min, max] = d3.extent(seasons, (d) => d.year) as [number, number];
 
     this.selectedYear = max;
-
-    const containerElement = this.getTimelineContainerElement();
 
     const input = document.createElement('input');
     input.type = 'range';
@@ -162,19 +146,78 @@ export class WorldMap {
     label.htmlFor = 'year-selector';
     label.textContent = seasons[seasons.length - 1].year.toString();
 
-    containerElement.appendChild(input);
-    containerElement.appendChild(label);
+    this.controlsContainerElement.appendChild(input);
+    this.controlsContainerElement.appendChild(label);
 
     input.addEventListener('input', (event) => {
+      // Each time the user moves the input, update the label
       const year = (event.target as HTMLInputElement).value;
       label.textContent = year;
     });
 
     input.addEventListener('change', (event) => {
+      // Once the change is complete, update the selected year and redraw the circuit markers
       const year = (event.target as HTMLInputElement).value;
       label.textContent = year;
       this.selectedYear = +year;
       this.drawCircuitMarkers();
+    });
+  }
+
+  private async drawCircuitMarkers(): Promise<void> {
+    let circuits = await this.getCircuits();
+
+    if (this.selectedYear) {
+      // If a year is selected, filter circuits by year, else keep all circuits
+      let races = await this.getRaces();
+      races = d3.filter(races, (race) => race.year === this.selectedYear);
+      circuits = circuits.filter((circuit) =>
+        races.some((race) => race.circuitId === circuit.circuitId),
+      );
+    }
+
+    this.circuits = circuits;
+
+    this.placeCircuitMarkers();
+    this.colorCountries();
+  }
+
+  private placeCircuitMarkers(): void {
+    const circuitMarkerGroup = d3.select(this.circuitMarkerGroup);
+
+    circuitMarkerGroup
+      .selectAll('.' + CIRCUIT_MARKER_CLASS)
+      .data(this.circuits)
+      .join('circle')
+      .attr('class', CIRCUIT_MARKER_CLASS)
+      .attr('cx', (d) => {
+        return this.projection([d.lng, d.lat])![0];
+      })
+      .attr('cy', (d) => {
+        return this.projection([d.lng, d.lat])![1];
+      })
+      .attr('r', 4)
+      .on('mouseenter', (_, data) => {
+        this.tooltipElement.textContent = data.name;
+        this.tooltipElement.style.visibility = 'visible';
+      })
+      .on('mousemove', (event) => {
+        this.tooltipElement.style.top = `${event.pageY + 20}px`;
+        this.tooltipElement.style.left = `${event.pageX + 20}px`;
+      })
+      .on('mouseleave', () => {
+        this.tooltipElement.style.visibility = 'hidden';
+      });
+  }
+
+  private colorCountries(): void {
+    const svg = d3.select(this.mapSvg);
+
+    svg.selectAll('.' + COUNTRY_CLASS).attr('class', (feature: any) => {
+      const countryCode = feature.properties.iso_a2_eh;
+      if (this.circuits.some((circuit) => circuit.country === countryCode))
+        return `${COUNTRY_CLASS} active`;
+      return COUNTRY_CLASS;
     });
   }
 }

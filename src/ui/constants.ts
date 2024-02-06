@@ -1,11 +1,16 @@
 export const APP_CONTAINER_ID = 'app';
-export const DASHBOARD_CONTAINER_ID = 'dashboard-container';
-export const TITLE_CONTAINER_ID = 'title-container';
-export const MAP_CONTAINER_ID = 'map-container';
-export const TIMELINE_CONTAINER_ID = 'timeline-container';
-export const WORLD_MAP_ID = 'world-map';
-export const CIRCUIT_CLASS = 'circuit';
+
+export const HOME_CONTAINER_ID = 'home-container';
+export const HOME_TITLE_CONTAINER_ID = 'home-title-container';
+export const HOME_WORLD_MAP_CONTAINER_ID = 'home-world-map-container';
+
+export const WORLD_MAP_CONTAINER_ID = 'world-map-container';
+export const WORLD_MAP_CONTROLS_CONTAINER_ID = 'world-map-controls-container';
+export const WORLD_MAP_SVG_ID = 'world-map-svg';
+export const COUNTRY_GROUP_ID = 'country-group';
+export const CIRCUIT_MARKER_GROUP_ID = 'circuit-marker-group';
+export const WORLD_MAP_TOOLTIP_ID = 'world-map-tooltip';
+
 export const COUNTRY_CLASS = 'country';
 export const CIRCUIT_MARKER_CLASS = 'circuit-marker';
-export const TOOLTIP_CLASS = 'tooltip';
-export const CIRCUIT_MARKERS_ID = 'circuit-markers';
+export const CIRCUIT_CLASS = 'circuit';
