@@ -1,5 +1,6 @@
 import * as d3 from 'd3';
 import { Circuit, DataService, Race, Season } from '../data';
+import { App } from './app';
 import {
   CIRCUIT_MARKER_CLASS,
   CIRCUIT_MARKER_GROUP_ID,
@@ -14,6 +15,8 @@ import {
 import './world-map.scss';
 
 export class WorldMap {
+  private app: App;
+
   private projection: d3.GeoProjection;
   private path: d3.GeoPath;
 
@@ -33,7 +36,9 @@ export class WorldMap {
   private circuits: Circuit[] = [];
   private selectedYear: number | null;
 
-  public constructor() {
+  public constructor(app: App) {
+    this.app = app;
+
     this.projection = d3.geoNaturalEarth1();
     this.path = d3.geoPath().projection(this.projection);
 
@@ -67,7 +72,7 @@ export class WorldMap {
     this.selectedYear = null;
   }
 
-  public async drawWorldMap(element: HTMLDivElement): Promise<void> {
+  public async render(element: HTMLDivElement): Promise<void> {
     this.containerElement = element;
 
     this.containerElement.appendChild(this.worldMapContainerElement);
@@ -242,6 +247,9 @@ export class WorldMap {
       })
       .on('mouseleave', () => {
         this.tooltipElement.style.visibility = 'hidden';
+      })
+      .on('click', (_, data) => {
+        this.app.displayTrack(data, this.selectedYear!);
       });
   }
 
