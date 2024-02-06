@@ -1,9 +1,9 @@
+import { WorldMap } from '../components/world-map';
 import {
   HOME_CONTAINER_ID,
   HOME_TITLE_CONTAINER_ID,
   HOME_WORLD_MAP_CONTAINER_ID,
 } from '../constants';
-import { WorldMap } from '../world-map';
 import './home.scss';
 import { View } from './view';
 

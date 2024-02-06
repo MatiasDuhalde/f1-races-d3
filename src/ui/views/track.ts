@@ -4,12 +4,10 @@ import { View } from './view';
 
 export class Track extends View {
   private circuit: Circuit;
-  private year: number;
 
-  public constructor(app: App, circuit: Circuit, year: number) {
+  public constructor(app: App, circuit: Circuit) {
     super(app);
     this.circuit = circuit;
-    this.year = year;
   }
 
   public async render(element: HTMLDivElement): Promise<void> {
@@ -17,7 +15,7 @@ export class Track extends View {
     trackContainer.id = 'track-container';
 
     const trackTitle = document.createElement('h1');
-    trackTitle.innerText = `${this.circuit.name} - ${this.year}`;
+    trackTitle.innerText = `${this.circuit.name}`;
 
     const trackMapContainer = document.createElement('div');
     trackMapContainer.id = 'track-map-container';

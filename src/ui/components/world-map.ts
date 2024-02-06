@@ -1,18 +1,18 @@
 import * as d3 from 'd3';
-import { Circuit, DataService, Race, Season } from '../data';
-import { App } from './app';
+import { Circuit, DataService, Race, Season } from '../../data';
+import { App } from '../app';
 import {
   CIRCUIT_MARKER_CLASS,
   CIRCUIT_MARKER_GROUP_ID,
-  CONTROLS_ROW_CLASS,
   COUNTRY_CLASS,
   COUNTRY_GROUP_ID,
   WORLD_MAP_CONTAINER_ID,
   WORLD_MAP_CONTROLS_CONTAINER_ID,
   WORLD_MAP_SVG_ID,
   WORLD_MAP_TOOLTIP_ID,
-} from './constants';
+} from '../constants';
 import './world-map.scss';
+import { YearSlider } from './year-slider';
 
 export class WorldMap {
   private app: App;
@@ -34,7 +34,6 @@ export class WorldMap {
   private geoJson: d3.ExtendedFeatureCollection;
 
   private circuits: Circuit[] = [];
-  private selectedYear: number | null;
 
   public constructor(app: App) {
     this.app = app;
@@ -69,7 +68,6 @@ export class WorldMap {
     this.geoJson = { type: 'FeatureCollection', features: [] };
 
     this.circuits = [];
-    this.selectedYear = null;
   }
 
   public async render(element: HTMLDivElement): Promise<void> {
@@ -79,9 +77,15 @@ export class WorldMap {
     this.containerElement.appendChild(this.controlsContainerElement);
     this.containerElement.appendChild(this.tooltipElement);
 
+    const yearSlider = new YearSlider(this.app);
+
     await this.drawCountries();
-    await this.drawControls();
+    yearSlider.render(this.controlsContainerElement);
     await this.drawCircuitMarkers();
+
+    this.app.yearSubject.subscribe(async () => {
+      await this.drawCircuitMarkers();
+    });
   }
 
   private async getWorldMapGeoJson(): Promise<d3.ExtendedFeatureCollection> {
@@ -134,83 +138,15 @@ export class WorldMap {
       .attr('d', this.path);
   }
 
-  private async drawControls(): Promise<void> {
-    const seasons = await this.getSeasons();
-    const [min, max] = d3.extent(seasons, (d) => d.year) as [number, number];
-
-    this.selectedYear = max;
-
-    const input = document.createElement('input');
-    input.type = 'range';
-    input.id = 'year-selector';
-    input.name = 'year';
-    input.min = min.toString();
-    input.max = max.toString();
-    input.value = this.selectedYear.toString();
-
-    const label = document.createElement('label');
-    label.htmlFor = 'year-selector';
-    label.textContent = seasons[seasons.length - 1].year.toString();
-
-    const leftArrow = document.createElement('button');
-    leftArrow.textContent = '<';
-    leftArrow.addEventListener('click', () => {
-      if (this.selectedYear && this.selectedYear > min) {
-        this.selectedYear--;
-        input.value = this.selectedYear.toString();
-        label.textContent = this.selectedYear.toString();
-        this.drawCircuitMarkers();
-      }
-    });
-
-    const rightArrow = document.createElement('button');
-    rightArrow.textContent = '>';
-    rightArrow.addEventListener('click', () => {
-      if (this.selectedYear && this.selectedYear < max) {
-        this.selectedYear++;
-        input.value = this.selectedYear.toString();
-        label.textContent = this.selectedYear.toString();
-        this.drawCircuitMarkers();
-      }
-    });
-
-    const sliderContainer = document.createElement('div');
-    sliderContainer.className = CONTROLS_ROW_CLASS;
-
-    sliderContainer.appendChild(leftArrow);
-    sliderContainer.appendChild(input);
-    sliderContainer.appendChild(rightArrow);
-
-    const labelContainer = document.createElement('div');
-    sliderContainer.className = CONTROLS_ROW_CLASS;
-
-    labelContainer.appendChild(label);
-
-    this.controlsContainerElement.appendChild(sliderContainer);
-    this.controlsContainerElement.appendChild(labelContainer);
-
-    input.addEventListener('input', (event) => {
-      // Each time the user moves the input, update the label
-      const year = (event.target as HTMLInputElement).value;
-      label.textContent = year;
-    });
-
-    input.addEventListener('change', (event) => {
-      // Once the change is complete, update the selected year and redraw the circuit markers
-      const year = (event.target as HTMLInputElement).value;
-      label.textContent = year;
-      this.selectedYear = +year;
-      this.drawCircuitMarkers();
-    });
-  }
-
   private async drawCircuitMarkers(): Promise<void> {
     let circuits = await this.getCircuits();
 
-    if (this.selectedYear) {
+    const year = this.app.getYear();
+
+    if (year) {
       // If a year is selected, filter circuits by year, else keep all circuits
       let races = await this.getRaces();
-      races = d3.filter(races, (race) => race.year === this.selectedYear);
+      races = d3.filter(races, (race) => race.year === year);
       circuits = circuits.filter((circuit) =>
         races.some((race) => race.circuitId === circuit.circuitId),
       );
@@ -249,7 +185,7 @@ export class WorldMap {
         this.tooltipElement.style.visibility = 'hidden';
       })
       .on('click', (_, data) => {
-        this.app.displayTrack(data, this.selectedYear!);
+        this.app.displayTrack(data);
       });
   }
 
