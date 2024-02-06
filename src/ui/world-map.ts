@@ -3,6 +3,7 @@ import { Circuit, DataService, Race, Season } from '../data';
 import {
   CIRCUIT_MARKER_CLASS,
   CIRCUIT_MARKER_GROUP_ID,
+  CONTROLS_ROW_CLASS,
   COUNTRY_CLASS,
   COUNTRY_GROUP_ID,
   WORLD_MAP_CONTAINER_ID,
@@ -146,8 +147,42 @@ export class WorldMap {
     label.htmlFor = 'year-selector';
     label.textContent = seasons[seasons.length - 1].year.toString();
 
-    this.controlsContainerElement.appendChild(input);
-    this.controlsContainerElement.appendChild(label);
+    const leftArrow = document.createElement('button');
+    leftArrow.textContent = '<';
+    leftArrow.addEventListener('click', () => {
+      if (this.selectedYear && this.selectedYear > min) {
+        this.selectedYear--;
+        input.value = this.selectedYear.toString();
+        label.textContent = this.selectedYear.toString();
+        this.drawCircuitMarkers();
+      }
+    });
+
+    const rightArrow = document.createElement('button');
+    rightArrow.textContent = '>';
+    rightArrow.addEventListener('click', () => {
+      if (this.selectedYear && this.selectedYear < max) {
+        this.selectedYear++;
+        input.value = this.selectedYear.toString();
+        label.textContent = this.selectedYear.toString();
+        this.drawCircuitMarkers();
+      }
+    });
+
+    const sliderContainer = document.createElement('div');
+    sliderContainer.className = CONTROLS_ROW_CLASS;
+
+    sliderContainer.appendChild(leftArrow);
+    sliderContainer.appendChild(input);
+    sliderContainer.appendChild(rightArrow);
+
+    const labelContainer = document.createElement('div');
+    sliderContainer.className = CONTROLS_ROW_CLASS;
+
+    labelContainer.appendChild(label);
+
+    this.controlsContainerElement.appendChild(sliderContainer);
+    this.controlsContainerElement.appendChild(labelContainer);
 
     input.addEventListener('input', (event) => {
       // Each time the user moves the input, update the label

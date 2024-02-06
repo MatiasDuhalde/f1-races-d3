@@ -14,3 +14,4 @@ export const WORLD_MAP_TOOLTIP_ID = 'world-map-tooltip';
 export const COUNTRY_CLASS = 'country';
 export const CIRCUIT_MARKER_CLASS = 'circuit-marker';
 export const CIRCUIT_CLASS = 'circuit';
+export const CONTROLS_ROW_CLASS = 'controls-row';
