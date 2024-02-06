@@ -1,3 +1,5 @@
-import { bootstrapApp } from './ui/app';
+import { App } from './ui/app';
 
-bootstrapApp();
+const app = new App();
+
+app.start();

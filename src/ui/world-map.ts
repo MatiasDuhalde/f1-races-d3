@@ -42,7 +42,7 @@ export class WorldMap {
     this.controlsContainerElement = document.createElement('div');
     this.controlsContainerElement.id = WORLD_MAP_CONTROLS_CONTAINER_ID;
     this.tooltipElement = document.createElement('div');
-    this.tooltipElement.className = WORLD_MAP_TOOLTIP_ID;
+    this.tooltipElement.id = WORLD_MAP_TOOLTIP_ID;
 
     const svg = d3.create('svg').attr('id', WORLD_MAP_SVG_ID);
 

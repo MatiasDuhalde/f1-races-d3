@@ -3,8 +3,14 @@ import { APP_CONTAINER_ID } from './constants';
 import { renderHome } from './home';
 import { getElementByIdOrThrow } from './utils';
 
-export const bootstrapApp = async (): Promise<void> => {
-  const appElement = getElementByIdOrThrow<HTMLDivElement>(APP_CONTAINER_ID);
+export class App {
+  private appElement: HTMLDivElement;
 
-  await renderHome(appElement);
-};
+  constructor() {
+    this.appElement = getElementByIdOrThrow<HTMLDivElement>(APP_CONTAINER_ID);
+  }
+
+  public async start() {
+    await renderHome(this.appElement);
+  }
+}
