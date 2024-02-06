@@ -111,16 +111,8 @@ export class WorldMap {
       .attr('r', 4);
 
     svg.selectAll('.' + COUNTRY_CLASS).attr('class', (feature: any) => {
-      // FIXME: This is a hack to get the country name from the GeoJSON properties
-      // It does not work for all countries
-      // A better solution would be to standardize the country names to ISO code using some library
-      const shortCountryName = feature.properties.brk_name;
-      const countryName = feature.properties.name;
-      if (
-        circuits.some(
-          (circuit) => circuit.country === countryName || circuit.country === shortCountryName,
-        )
-      )
+      const countryCode = feature.properties.iso_a2_eh;
+      if (circuits.some((circuit) => circuit.country === countryCode))
         return `${COUNTRY_CLASS} active`;
       return COUNTRY_CLASS;
     });
