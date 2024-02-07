@@ -16,7 +16,7 @@ export class App {
   constructor() {
     this.appElement = getElementByIdOrThrow<HTMLDivElement>(APP_CONTAINER_ID);
 
-    this.currentViewSubject.subscribe(async (view) => {
+    this.currentViewSubject.subscribe(async (view: View) => {
       if (this.currentView) {
         this.currentView.destroy();
       }
@@ -24,7 +24,7 @@ export class App {
       this.currentView = view;
     });
 
-    this.yearSubject.subscribe((year) => {
+    this.yearSubject.subscribe((year: number | null) => {
       this.year = year;
     });
   }
