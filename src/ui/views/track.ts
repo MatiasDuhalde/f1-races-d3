@@ -1,10 +1,13 @@
-import { Circuit } from '../../data';
+import { Circuit, DataService } from '../../data';
 import { App } from '../app';
-import { YearSlider } from '../components/year-slider';
+import { Slider } from '../components/slider';
 import { View } from './view';
 
 export class Track extends View {
+  public static TRACK_CONTROLS_CONTAINER_ID = 'track-controls-container';
+
   private circuit: Circuit;
+  private yearSlider: Slider<number> | undefined;
 
   public constructor(app: App, circuit: Circuit) {
     super(app);
@@ -22,15 +25,24 @@ export class Track extends View {
     trackMapContainer.id = 'track-map-container';
 
     const controlsContainerElement = document.createElement('div');
-    // controlsContainerElement.id = WORLD_MAP_CONTROLS_CONTAINER_ID;
+    controlsContainerElement.id = Track.TRACK_CONTROLS_CONTAINER_ID;
 
     trackContainer.appendChild(trackTitle);
     trackContainer.appendChild(trackMapContainer);
     trackContainer.appendChild(controlsContainerElement);
     element.appendChild(trackContainer);
 
-    const yearSlider = new YearSlider(this.app);
-    await yearSlider.render(controlsContainerElement);
+    const dataService = DataService.getInstance();
+
+    const seasons = await dataService.getSeasons();
+    const years = seasons.map((season) => season.year).sort();
+
+    this.yearSlider = new Slider(years, this.app.getYear() || undefined);
+    this.yearSlider.render(controlsContainerElement);
+
+    this.yearSlider.subscribe(async (year) => {
+      this.app.yearSubject.next(year);
+    });
   }
 
   public destroy(): void {
@@ -38,5 +50,7 @@ export class Track extends View {
     if (trackContainer) {
       trackContainer.remove();
     }
+
+    this.yearSlider?.destroy();
   }
 }

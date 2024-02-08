@@ -1,6 +1,7 @@
 import type { App } from '../app';
+import { UIElement } from '../ui-element';
 
-export abstract class View {
+export abstract class View implements UIElement {
   protected app: App;
 
   constructor(app: App) {

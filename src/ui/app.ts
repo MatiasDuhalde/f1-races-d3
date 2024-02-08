@@ -1,11 +1,12 @@
 import { Subject } from 'rxjs';
 import { Circuit } from '../data';
 import './app.scss';
-import { APP_CONTAINER_ID } from './constants';
 import { getElementByIdOrThrow } from './utils';
 import { Home, Track, View } from './views';
 
 export class App {
+  public static APP_CONTAINER_ID = 'app';
+
   private appElement: HTMLDivElement;
   private currentView?: View;
   private year: number | null = null;
@@ -14,7 +15,7 @@ export class App {
   public yearSubject = new Subject<number | null>();
 
   constructor() {
-    this.appElement = getElementByIdOrThrow<HTMLDivElement>(APP_CONTAINER_ID);
+    this.appElement = getElementByIdOrThrow<HTMLDivElement>(App.APP_CONTAINER_ID);
 
     this.currentViewSubject.subscribe(async (view: View) => {
       if (this.currentView) {

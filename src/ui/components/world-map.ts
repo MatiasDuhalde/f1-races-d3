@@ -1,20 +1,18 @@
 import * as d3 from 'd3';
 import { Circuit, DataService, Race } from '../../data';
 import { App } from '../app';
-import {
-  CIRCUIT_MARKER_CLASS,
-  CIRCUIT_MARKER_GROUP_ID,
-  COUNTRY_CLASS,
-  COUNTRY_GROUP_ID,
-  WORLD_MAP_CONTAINER_ID,
-  WORLD_MAP_CONTROLS_CONTAINER_ID,
-  WORLD_MAP_SVG_ID,
-  WORLD_MAP_TOOLTIP_ID,
-} from '../constants';
+import { UIElement } from '../ui-element';
 import './world-map.scss';
-import { YearSlider } from './year-slider';
 
-export class WorldMap {
+export class WorldMap implements UIElement {
+  public static WORLD_MAP_CONTAINER_ID = 'world-map-container';
+  public static WORLD_MAP_SVG_ID = 'world-map-svg';
+  public static COUNTRY_GROUP_ID = 'country-group';
+  public static CIRCUIT_MARKER_GROUP_ID = 'circuit-marker-group';
+  public static WORLD_MAP_TOOLTIP_ID = 'world-map-tooltip';
+  public static COUNTRY_CLASS = 'country';
+  public static CIRCUIT_MARKER_CLASS = 'circuit-marker';
+
   private app: App;
 
   private projection: d3.GeoProjection;
@@ -22,7 +20,6 @@ export class WorldMap {
 
   private containerElement: HTMLDivElement | undefined = undefined;
   private worldMapContainerElement: HTMLDivElement;
-  private controlsContainerElement: HTMLDivElement;
   private tooltipElement: HTMLDivElement;
 
   private mapSvg: SVGSVGElement;
@@ -42,16 +39,14 @@ export class WorldMap {
     this.path = d3.geoPath().projection(this.projection);
 
     this.worldMapContainerElement = document.createElement('div');
-    this.worldMapContainerElement.id = WORLD_MAP_CONTAINER_ID;
-    this.controlsContainerElement = document.createElement('div');
-    this.controlsContainerElement.id = WORLD_MAP_CONTROLS_CONTAINER_ID;
+    this.worldMapContainerElement.id = WorldMap.WORLD_MAP_CONTAINER_ID;
     this.tooltipElement = document.createElement('div');
-    this.tooltipElement.id = WORLD_MAP_TOOLTIP_ID;
+    this.tooltipElement.id = WorldMap.WORLD_MAP_TOOLTIP_ID;
 
-    const svg = d3.create('svg').attr('id', WORLD_MAP_SVG_ID);
+    const svg = d3.create('svg').attr('id', WorldMap.WORLD_MAP_SVG_ID);
 
-    const countryGroup = svg.append('g').attr('id', COUNTRY_GROUP_ID);
-    const circuitMarkerGroup = svg.append('g').attr('id', CIRCUIT_MARKER_GROUP_ID);
+    const countryGroup = svg.append('g').attr('id', WorldMap.COUNTRY_GROUP_ID);
+    const circuitMarkerGroup = svg.append('g').attr('id', WorldMap.CIRCUIT_MARKER_GROUP_ID);
 
     this.mapSvg = svg.node() as SVGSVGElement;
     this.countryGroup = countryGroup.node() as SVGGElement;
@@ -74,18 +69,20 @@ export class WorldMap {
     this.containerElement = element;
 
     this.containerElement.appendChild(this.worldMapContainerElement);
-    this.containerElement.appendChild(this.controlsContainerElement);
     this.containerElement.appendChild(this.tooltipElement);
 
-    const yearSlider = new YearSlider(this.app);
-
     await this.drawCountries();
-    yearSlider.render(this.controlsContainerElement);
     await this.drawCircuitMarkers();
 
     this.app.yearSubject.subscribe(async () => {
       await this.drawCircuitMarkers();
     });
+  }
+
+  public destroy(): void {
+    this.mapResizeObserver.disconnect();
+    this.containerElement?.removeChild(this.worldMapContainerElement);
+    this.containerElement?.removeChild(this.tooltipElement);
   }
 
   private async getWorldMapGeoJson(): Promise<d3.ExtendedFeatureCollection> {
@@ -114,7 +111,7 @@ export class WorldMap {
     svg
       .attr('width', width)
       .attr('height', height)
-      .selectAll('.' + COUNTRY_CLASS)
+      .selectAll('.' + WorldMap.COUNTRY_CLASS)
       .attr('d', this.path as any);
 
     this.placeCircuitMarkers();
@@ -129,7 +126,7 @@ export class WorldMap {
       .selectAll('path')
       .data(geoJson.features)
       .join('path')
-      .attr('class', COUNTRY_CLASS)
+      .attr('class', WorldMap.COUNTRY_CLASS)
       .attr('d', this.path);
   }
 
@@ -157,10 +154,10 @@ export class WorldMap {
     const circuitMarkerGroup = d3.select(this.circuitMarkerGroup);
 
     circuitMarkerGroup
-      .selectAll('.' + CIRCUIT_MARKER_CLASS)
+      .selectAll('.' + WorldMap.CIRCUIT_MARKER_CLASS)
       .data(this.circuits)
       .join('circle')
-      .attr('class', CIRCUIT_MARKER_CLASS)
+      .attr('class', WorldMap.CIRCUIT_MARKER_CLASS)
       .attr('cx', (d) => {
         return this.projection([d.lng, d.lat])![0];
       })
@@ -187,11 +184,11 @@ export class WorldMap {
   private colorCountries(): void {
     const svg = d3.select(this.mapSvg);
 
-    svg.selectAll('.' + COUNTRY_CLASS).attr('class', (feature: any) => {
+    svg.selectAll('.' + WorldMap.COUNTRY_CLASS).attr('class', (feature: any) => {
       const countryCode = feature.properties.iso_a2_eh;
       if (this.circuits.some((circuit) => circuit.country === countryCode))
-        return `${COUNTRY_CLASS} active`;
-      return COUNTRY_CLASS;
+        return `${WorldMap.COUNTRY_CLASS} active`;
+      return WorldMap.COUNTRY_CLASS;
     });
   }
 }

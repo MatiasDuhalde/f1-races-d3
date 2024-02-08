@@ -2,24 +2,7 @@
 
 #world-map-container {
   width: 100%;
-  height: 90%;
-}
-
-#world-map-controls-container {
-  width: 100%;
-  height: 10%;
-  box-sizing: border-box;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.controls-row {
-  width: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
+  height: 100%;
 }
 
 #world-map-svg {
@@ -60,8 +43,4 @@
   white-space: pre;
   z-index: 300;
   visibility: hidden;
-}
-
-#year-selector {
-  width: 50%;
 }
