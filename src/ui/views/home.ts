@@ -37,7 +37,8 @@ export class Home extends View {
     const seasons = await DataService.getInstance().getSeasons();
     const years = seasons.map((season) => season.year).sort();
 
-    this.yearSlider = new Slider(years);
+    const year = this.app.getYear();
+    this.yearSlider = new Slider(years, year || undefined);
 
     this.yearSlider.render(homeControlsContainer);
 
