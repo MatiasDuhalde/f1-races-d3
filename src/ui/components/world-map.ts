@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { Circuit, DataService, Race } from '../../data';
+import { Circuit, DataService } from '../../data';
 import { App } from '../app';
 import { UIElement } from '../ui-element';
 import './world-map.scss';
@@ -96,9 +96,9 @@ export class WorldMap implements UIElement {
     return dataService.getCircuits();
   }
 
-  private async getRaces(): Promise<Race[]> {
+  private async getCircuitsByYear(year: number): Promise<Circuit[]> {
     const dataService = DataService.getInstance();
-    return dataService.getRaces();
+    return dataService.getCircuitsByYear(year);
   }
 
   private async resizeMap(): Promise<void> {
@@ -131,20 +131,9 @@ export class WorldMap implements UIElement {
   }
 
   private async drawCircuitMarkers(): Promise<void> {
-    let circuits = await this.getCircuits();
-
     const year = this.app.getYear();
 
-    if (year) {
-      // If a year is selected, filter circuits by year, else keep all circuits
-      let races = await this.getRaces();
-      races = d3.filter(races, (race) => race.year === year);
-      circuits = circuits.filter((circuit) =>
-        races.some((race) => race.circuitId === circuit.circuitId),
-      );
-    }
-
-    this.circuits = circuits;
+    this.circuits = year ? await this.getCircuitsByYear(year) : await this.getCircuits();
 
     this.placeCircuitMarkers();
     this.colorCountries();

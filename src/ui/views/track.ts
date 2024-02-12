@@ -1,4 +1,4 @@
-import { Circuit, DataService } from '../../data';
+import { Circuit, DataService, Race } from '../../data';
 import { App } from '../app';
 import { Slider } from '../components/slider';
 import './track.scss';
@@ -16,6 +16,17 @@ export class Track extends View {
   public constructor(app: App, circuit: Circuit) {
     super(app);
     this.circuit = circuit;
+  }
+
+  private async getRaceByYearAndCircuitId(): Promise<Race | undefined> {
+    const dataService = DataService.getInstance();
+
+    dataService.getResults();
+
+    const year = this.app.getYear();
+    return year !== null
+      ? dataService.getRaceByYearAndCircuitId(year, this.circuit.circuitId)
+      : undefined;
   }
 
   public async render(element: HTMLDivElement): Promise<void> {
@@ -63,6 +74,10 @@ export class Track extends View {
 
     this.yearSlider.subscribe(async (year) => {
       this.app.yearSubject.next(year);
+    });
+
+    this.app.yearSubject.subscribe(async () => {
+      const race = await this.getRaceByYearAndCircuitId();
     });
   }
 
