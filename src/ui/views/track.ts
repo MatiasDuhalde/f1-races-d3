@@ -78,6 +78,8 @@ export class Track extends View {
 
     this.app.yearSubject.subscribe(async () => {
       const race = await this.getRaceByYearAndCircuitId();
+
+      console.log(race);
     });
   }
 
