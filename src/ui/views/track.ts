@@ -1,6 +1,7 @@
-import { Circuit, DataService, Race } from '../../data';
+import { Circuit, DataService } from '../../data';
 import { App } from '../app';
 import { Slider } from '../components/slider';
+import { TrackMap } from '../components/track-map';
 import './track.scss';
 import { View } from './view';
 
@@ -12,22 +13,23 @@ export class Track extends View {
 
   private circuit: Circuit;
   private yearSlider: Slider<number> | undefined;
+  private trackMap: TrackMap | undefined;
 
   public constructor(app: App, circuit: Circuit) {
     super(app);
     this.circuit = circuit;
   }
 
-  private async getRaceByYearAndCircuitId(): Promise<Race | undefined> {
-    const dataService = DataService.getInstance();
+  // private async getRaceByYearAndCircuitId(): Promise<Race | undefined> {
+  //   const dataService = DataService.getInstance();
 
-    dataService.getResults();
+  //   dataService.getResults();
 
-    const year = this.app.getYear();
-    return year !== null
-      ? dataService.getRaceByYearAndCircuitId(year, this.circuit.circuitId)
-      : undefined;
-  }
+  //   const year = this.app.getYear();
+  //   return year !== null
+  //     ? dataService.getRaceByYearAndCircuitId(year, this.circuit.circuitId)
+  //     : undefined;
+  // }
 
   public async render(element: HTMLDivElement): Promise<void> {
     const trackContainer = document.createElement('div');
@@ -76,11 +78,8 @@ export class Track extends View {
       this.app.yearSubject.next(year);
     });
 
-    this.app.yearSubject.subscribe(async () => {
-      const race = await this.getRaceByYearAndCircuitId();
-
-      console.log(race);
-    });
+    this.trackMap = new TrackMap(this.circuit);
+    this.trackMap.render(trackMapContainer);
   }
 
   public destroy(): void {
@@ -89,6 +88,7 @@ export class Track extends View {
       trackContainer.remove();
     }
 
+    this.trackMap?.destroy();
     this.yearSlider?.destroy();
   }
 }

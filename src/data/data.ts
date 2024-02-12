@@ -7,8 +7,10 @@ export class DataService {
     'https://raw.githubusercontent.com/MatiasDuhalde/f1-races-d3/master/data/';
   private static readonly F1_PREFIX = 'f1/';
   private static readonly GEO_PREFIX = 'geo/';
+  private static readonly TRACKS_PREFIX = 'tracks/';
   private static readonly CSV_EXTENSION = '.csv';
   private static readonly JSON_EXTENSION = '.json';
+  private static readonly SVG_EXTENSION = '.svg';
 
   private static readonly CIRCUITS_PATH =
     this.BASE_PATH + this.F1_PREFIX + 'circuits' + this.CSV_EXTENSION;
@@ -182,5 +184,16 @@ export class DataService {
       this.worldMap = (await d3.json(DataService.WORLD_MAP_PATH)) as d3.ExtendedFeatureCollection;
     }
     return this.worldMap;
+  }
+
+  private getCircuitSvgPath(circuitRef: string): string {
+    return (
+      DataService.BASE_PATH + DataService.TRACKS_PREFIX + circuitRef + DataService.SVG_EXTENSION
+    );
+  }
+
+  public async getTrackSvg(circuitRef: string): Promise<HTMLElement> {
+    const xml = await d3.xml(this.getCircuitSvgPath(circuitRef));
+    return xml.documentElement;
   }
 }
