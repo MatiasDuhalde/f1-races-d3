@@ -27,15 +27,17 @@ export class DriverIframeComponent {
     if (this.driver === null) {
       return '';
     }
-    return this.domSanitizer.bypassSecurityTrustResourceUrl(this.driver.url);
+    let url = this.transformToHttps(this.driver.url);
+    url = this.transformToMobileUrl(url);
+
+    return this.domSanitizer.bypassSecurityTrustResourceUrl(url);
   }
 
-  getMobileUrl() {
-    if (this.driver === null) {
-      return '';
-    }
-    return this.domSanitizer.bypassSecurityTrustResourceUrl(
-      this.driver.url.replace('wikipedia', 'm.wikipedia'),
-    );
+  private transformToHttps(url: string) {
+    return url.replace('http://', 'https://');
+  }
+
+  private transformToMobileUrl(url: string) {
+    return url.replace('wikipedia', 'm.wikipedia');
   }
 }

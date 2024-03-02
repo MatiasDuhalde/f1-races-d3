@@ -2,6 +2,12 @@
   "hosting": {
     "site": "f1-races",
     "public": "dist/f1-races/browser",
+    "rewrites": [
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ],
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }
 }
