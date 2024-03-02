@@ -148,7 +148,7 @@ export class WorldMapComponent implements OnInit, OnDestroy, AfterViewInit {
         this.tooltipElement.nativeElement.style.visibility = 'hidden';
       })
       .on('click', (_, data) => {
-        this.ngZone.run(() => this.router.navigate(['track', data.circuitId]));
+        this.ngZone.run(() => this.router.navigate(['circuit', data.circuitId]));
       });
   }
 

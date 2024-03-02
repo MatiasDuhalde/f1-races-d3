@@ -1,0 +1,20 @@
+<div id="race-container">
+  <div id="race-title-container">
+    <button id="back-button" (click)="goHome()">&lt; Back</button>
+    <a [href]="circuit?.url" target="_blank" rel="noopener noreferrer">
+      <h1>{{ circuit?.name }}</h1>
+    </a>
+  </div>
+  <div id="race-central-container">
+    <div id="race-laps-overview-container">
+      <app-laps-overview *ngIf="race !== null" [race]="race"></app-laps-overview>
+    </div>
+    <div id="race-info-container">
+      <div></div>
+      <div></div>
+    </div>
+  </div>
+  <div id="race-controls-container">
+    <app-slider [options]="availableYears" [value]="currentYear"></app-slider>
+  </div>
+</div>

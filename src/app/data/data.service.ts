@@ -177,7 +177,7 @@ export class DataService {
 
   public async getPitStops(): Promise<PitStop[]> {
     if (this.pitStops.length === 0) {
-      const result = await d3.csv(DataService.LAP_TIMES_PATH);
+      const result = await d3.csv(DataService.PIT_STOPS_PATH);
       this.pitStops = result.map(parsePitStop);
     }
     return this.pitStops;
