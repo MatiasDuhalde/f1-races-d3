@@ -6,6 +6,7 @@ import { DataService } from '../data/data.service';
 import { Circuit, Driver, Race, Result } from '../data/types';
 import { SliderComponent } from '../slider/slider.component';
 import { YearService } from '../year.service';
+import { DriverIframeComponent } from './driver-iframe/driver-iframe.component';
 import { DriverResultComponent } from './driver-result/driver-result.component';
 import { LapsOverviewComponent } from './laps-overview/laps-overview.component';
 import { RaceDataService } from './race-data.service';
@@ -13,7 +14,13 @@ import { RaceDataService } from './race-data.service';
 @Component({
   selector: 'app-race',
   standalone: true,
-  imports: [CommonModule, SliderComponent, DriverResultComponent, LapsOverviewComponent],
+  imports: [
+    CommonModule,
+    SliderComponent,
+    DriverResultComponent,
+    LapsOverviewComponent,
+    DriverIframeComponent,
+  ],
   templateUrl: './race.component.html',
   styleUrl: './race.component.scss',
 })
