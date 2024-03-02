@@ -88,10 +88,12 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
     const minTime = 0;
     const maxTime = d3.max(this.data, (d) => d.duration)!;
 
+    const flagOffset = 40;
+
     const x = d3
       .scaleLinear()
       .domain([minTime, maxTime])
-      .range([0, width - margin.right - margin.left]);
+      .range([0, width - margin.right - margin.left - flagOffset]);
 
     const refs = this.data.map((entry) => entry.driverRef);
 
@@ -125,7 +127,7 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('class', 'driver-timeline')
       .attr('transform', (d) => `translate(0, ${y(d.driverRef)})`)
       .on('click', (event, d) => {
-        // TODO spawn wikipedia (d.url)
+        this.raceDataService.setSelectedDriver(d);
       })
       .selectAll('.segment')
       .data((r) => r.data)
@@ -136,37 +138,62 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('width', (entry) => x(entry.milliseconds))
       .attr('x', (entry) => x(entry.start) + margin.left)
       .attr('fill', (entry) => this.color(entry))
-      .on('mouseenter', (event, entry) => {
-        this.svg.selectAll('.tooltip').remove();
-        const tooltip = this.svg.append('g').attr('class', 'tooltip');
-        tooltip
-          .append('rect')
-          .attr('x', width - margin.right)
-          .attr('y', event.layerY)
-          .attr('stroke', 'black')
-          .attr('width', margin.right)
-          .attr('height', 40)
-          .attr('fill', '#00000000');
-        tooltip
-          .append('text')
-          .text(
-            this.raceDataService.isLapTime(entry)
-              ? 'Lap ' + (entry as LapTime).lap
-              : 'Pit ' + (entry as PitStop).stop,
-          )
-          .attr('color', 'black')
-          .attr('x', width - margin.right)
-          .attr('y', event.layerY + 15);
-        tooltip
-          .append('text')
-          .text(
-            this.raceDataService.isLapTime(entry)
-              ? 'Pos ' + (entry as LapTime).position
-              : 'Dur ' + (entry as PitStop).duration,
-          )
-          .attr('x', width - margin.right)
-          .attr('y', event.layerY + 30);
+
+      .on('mouseenter', (_, data) => {
+        const isLapTime = this.raceDataService.isLapTime(data);
+        let text = isLapTime
+          ? `Lap ${(data as LapTime).lap}`
+          : `Pit Stop ${(data as PitStop).stop}`;
+
+        if (isLapTime) {
+          text += `\n - Position ${(data as LapTime).position}`;
+          text += `\n - Time ${(data as LapTime).time}`;
+        }
+        if (!isLapTime) {
+          text += `\n - Duration ${(data as PitStop).duration}`;
+        }
+        this.lapsOverviewTooltipElement.nativeElement.textContent = text;
+        this.lapsOverviewTooltipElement.nativeElement.style.visibility = 'visible';
+      })
+      .on('mousemove', (event) => {
+        this.lapsOverviewTooltipElement.nativeElement.style.top = `${event.pageY + 20}px`;
+        this.lapsOverviewTooltipElement.nativeElement.style.left = `${event.pageX + 20}px`;
+      })
+      .on('mouseleave', () => {
+        this.lapsOverviewTooltipElement.nativeElement.style.visibility = 'hidden';
       });
+
+    // .on('mouseenter', (event, entry) => {
+    //   this.svg.selectAll('.tooltip').remove();
+    //   const tooltip = this.svg.append('g').attr('class', 'tooltip');
+    //   tooltip
+    //     .append('rect')
+    //     .attr('x', width - margin.right)
+    //     .attr('y', event.layerY)
+    //     .attr('stroke', 'black')
+    //     .attr('width', margin.right)
+    //     .attr('height', 40)
+    //     .attr('fill', '#00000000');
+    //   tooltip
+    //     .append('text')
+    //     .text(
+    //       this.raceDataService.isLapTime(entry)
+    //         ? 'Lap ' + (entry as LapTime).lap
+    //         : 'Pit ' + (entry as PitStop).stop,
+    //     )
+    //     .attr('color', 'black')
+    //     .attr('x', width - margin.right)
+    //     .attr('y', event.layerY + 15);
+    //   tooltip
+    //     .append('text')
+    //     .text(
+    //       this.raceDataService.isLapTime(entry)
+    //         ? 'Pos ' + (entry as LapTime).position
+    //         : 'Dur ' + (entry as PitStop).duration,
+    //     )
+    //     .attr('x', width - margin.right)
+    //     .attr('y', event.layerY + 30);
+    // });
   }
 
   private color(entry: DriverLapData): string {

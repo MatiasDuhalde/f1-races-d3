@@ -24,6 +24,9 @@ export class RaceDataService {
   private raceDataSource = new BehaviorSubject<DriverResult[]>([]);
   raceData$ = this.raceDataSource.asObservable();
 
+  private selectedDriverSource = new BehaviorSubject<Driver | null>(null);
+  selectedDriver$ = this.selectedDriverSource.asObservable();
+
   private availableYears: number[] = [];
   private raceDrivers: Map<number, Driver> = new Map();
   private raceResults: Result[] = [];
@@ -36,6 +39,10 @@ export class RaceDataService {
     this.circuitSource.next(circuit);
     await this.updateAvailableYears();
     await this.updateRace();
+  }
+
+  public async setSelectedDriver(driver: Driver | null): Promise<void> {
+    this.selectedDriverSource.next(driver);
   }
 
   private async updateRace(): Promise<void> {
@@ -83,7 +90,12 @@ export class RaceDataService {
   }
 
   private async buildData() {
-    const race = this.raceSource.getValue()!;
+    const race = this.raceSource.getValue();
+
+    if (race === null) {
+      this.raceDataSource.next([]);
+      return;
+    }
 
     const raceLapTimes = await this.dataService.getLapTimesByRaceId(race.raceId);
     const racePitStops = await this.dataService.getPitStopsByRaceId(race.raceId);
