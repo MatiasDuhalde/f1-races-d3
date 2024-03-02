@@ -1,4 +1,4 @@
-import type { Circuit, Driver, Race, Result, Season } from './types';
+import type { Circuit, Driver, LapTime, PitStop, Race, Result, Season } from './types';
 
 const parseNumberOrUndefined = (value: string): number | undefined => {
   return value === '\\N' ? undefined : +value;
@@ -81,4 +81,23 @@ export const parseResult = (d: any): Result => ({
   fastestLapTime: parseStringOrUndefined(d['fastestLapTime']),
   fastestLapSpeed: parseNumberOrUndefined(d['fastestLapSpeed']),
   statusId: +d['statusId'],
+});
+
+export const parseLapTime = (d: any): LapTime => ({
+  raceId: +d['raceId'],
+  driverId: +d['driverId'],
+  lap: +d['lap'],
+  position: +d['position'],
+  time: d['time'],
+  milliseconds: +d['milliseconds'],
+});
+
+export const parsePitStop = (d: any): PitStop => ({
+  raceId: +d['raceId'],
+  driverId: +d['driverId'],
+  stop: +d['stop'],
+  lap: +d['lap'],
+  time: d['time'],
+  duration: d['duration'],
+  milliseconds: +d['milliseconds'],
 });

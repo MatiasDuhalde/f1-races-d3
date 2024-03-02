@@ -5,14 +5,14 @@ export interface SprintResult {
   constructorId: number;
   number: number;
   grid: number;
-  position: number;
+  position?: number;
   positionText: string;
   positionOrder: number;
   points: number;
   laps: number;
-  time: number;
-  milliseconds: number;
-  fastestLap: number;
-  fastestLapTime: string;
+  time?: number;
+  milliseconds?: number;
+  fastestLap?: number;
+  fastestLapTime?: string;
   statusId: number;
 }

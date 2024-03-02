@@ -1,7 +1,15 @@
 import { Injectable } from '@angular/core';
 import * as d3 from 'd3';
-import { parseCircuit, parseDriver, parseRace, parseResult, parseSeason } from './parse';
-import type { Circuit, Driver, Race, Result, Season } from './types';
+import {
+  parseCircuit,
+  parseDriver,
+  parseLapTime,
+  parsePitStop,
+  parseRace,
+  parseResult,
+  parseSeason,
+} from './parse';
+import type { Circuit, Driver, LapTime, PitStop, Race, Result, Season } from './types';
 
 @Injectable({
   providedIn: 'root',
@@ -34,8 +42,10 @@ export class DataService {
   // private static readonly CONSTRUCTORS_PATH = DataService.BASE_PATH + 'constructors' + DataService.CSV_EXTENSION;
   // private static readonly DRIVER_STANDINGS_PATH =
   //   DataService.BASE_PATH + 'driver_standings' + DataService.CSV_EXTENSION;
-  // private static readonly LAP_TIMES_PATH = DataService.BASE_PATH + 'lap_times' + DataService.CSV_EXTENSION;
-  // private static readonly PIT_STOPS_PATH = DataService.BASE_PATH + 'pit_stops' + DataService.CSV_EXTENSION;
+  private static readonly LAP_TIMES_PATH =
+    DataService.BASE_PATH + DataService.F1_PREFIX + 'lap_times' + DataService.CSV_EXTENSION;
+  private static readonly PIT_STOPS_PATH =
+    DataService.BASE_PATH + DataService.F1_PREFIX + 'pit_stops' + DataService.CSV_EXTENSION;
   // private static readonly QUALIFYING_PATH = DataService.BASE_PATH + 'qualifying' + DataService.CSV_EXTENSION;
   // private static readonly SPRINT_RESULTS_PATH =
   //   DataService.BASE_PATH + 'sprint_results' + DataService.CSV_EXTENSION;
@@ -51,7 +61,10 @@ export class DataService {
   private drivers: Map<number, Driver> = new Map();
   private seasons: Map<number, Season> = new Map();
   private races: Map<number, Race> = new Map();
-  private results: Map<number, Result> = new Map();
+  private results: Result[] = [];
+  private lapTimes: LapTime[] = [];
+  private pitStops: PitStop[] = [];
+
   private worldMap: d3.ExtendedFeatureCollection | undefined = undefined;
 
   private constructor() {}
@@ -93,9 +106,7 @@ export class DataService {
   public async getDriversByRaceId(raceId: number): Promise<Map<number, Driver>> {
     const results = await this.getResultsByRaceId(raceId);
     const drivers = await this.getDrivers();
-    return new Map(
-      [...results].map(([_, result]) => [result.driverId, drivers.get(result.driverId)!]),
-    );
+    return new Map(results.map((result) => [result.driverId, drivers.get(result.driverId)!]));
   }
 
   public async getSeasons(): Promise<Map<number, Season>> {
@@ -138,17 +149,43 @@ export class DataService {
     return undefined;
   }
 
-  public async getResults(): Promise<Map<number, Result>> {
-    if (this.results.size === 0) {
+  public async getResults(): Promise<Result[]> {
+    if (this.results.length === 0) {
       const result = await d3.csv(DataService.RESULTS_PATH);
-      result.map(parseResult).forEach((d) => this.results.set(d.resultId, d));
+      this.results = result.map(parseResult);
     }
     return this.results;
   }
 
-  public async getResultsByRaceId(raceId: number): Promise<Map<number, Result>> {
+  public async getResultsByRaceId(raceId: number): Promise<Result[]> {
     const results = await this.getResults();
-    return new Map([...results].filter(([_, result]) => result.raceId === raceId));
+    return results.filter((result) => result.raceId === raceId);
+  }
+
+  public async getLapTimes(): Promise<LapTime[]> {
+    if (this.lapTimes.length === 0) {
+      const result = await d3.csv(DataService.LAP_TIMES_PATH);
+      this.lapTimes = result.map(parseLapTime);
+    }
+    return this.lapTimes;
+  }
+
+  public async getLapTimesByRaceId(raceId: number): Promise<LapTime[]> {
+    const lapTimes = await this.getLapTimes();
+    return lapTimes.filter((lapTime) => lapTime.raceId === raceId);
+  }
+
+  public async getPitStops(): Promise<PitStop[]> {
+    if (this.pitStops.length === 0) {
+      const result = await d3.csv(DataService.LAP_TIMES_PATH);
+      this.pitStops = result.map(parsePitStop);
+    }
+    return this.pitStops;
+  }
+
+  public async getPitStopsByRaceId(raceId: number): Promise<PitStop[]> {
+    const pitStops = await this.getPitStops();
+    return pitStops.filter((pitStop) => pitStop.raceId === raceId);
   }
 
   public async getWorldMapGeoJson(): Promise<d3.ExtendedFeatureCollection> {
