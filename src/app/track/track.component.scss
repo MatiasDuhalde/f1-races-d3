@@ -1,0 +1,65 @@
+@import '../../styles.scss';
+
+#track-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+}
+
+#track-title-container {
+  width: 100%;
+  height: 10%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: space-evenly;
+  align-items: center;
+
+  h1 {
+    font-size: 2.5em;
+  }
+}
+
+#track-central-container {
+  width: 100%;
+  height: 80%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+#track-map-container {
+  width: 50%;
+  height: 100%;
+  box-sizing: border-box;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+#track-drivers-container {
+  width: 50%;
+  height: 100%;
+  box-sizing: border-box;
+  display: block;
+  justify-content: center;
+  align-items: center;
+}
+
+#track-controls-container {
+  width: 100%;
+  height: 10%;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+
+app-slider {
+  width: 100%;
+  height: 100%;
+}

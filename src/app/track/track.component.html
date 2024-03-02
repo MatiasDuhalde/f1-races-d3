@@ -1,0 +1,22 @@
+<div id="track-container">
+  <div id="track-title-container">
+    <button id="back-button" (click)="goHome()">&lt; Back</button>
+    <a [href]="circuit?.url" target="_blank" rel="noopener noreferrer">
+      <h1>{{ circuit?.name }}</h1>
+    </a>
+  </div>
+  <div id="track-central-container">
+    <div id="track-map-container"></div>
+    <div id="track-drivers-container">
+      <span *ngFor="let result of results">
+        <app-driver-result
+          [driver]="drivers.get(result.driverId)!"
+          [result]="result"
+        ></app-driver-result>
+      </span>
+    </div>
+  </div>
+  <div id="track-controls-container">
+    <app-slider [options]="availableYears" [value]="currentYear"></app-slider>
+  </div>
+</div>

@@ -1,0 +1,24 @@
+<div class="controls-row">
+  <button (click)="previousValue()">&lt;</button>
+  <input
+    type="range"
+    id="slider-input"
+    class="slider"
+    min="0"
+    [max]="options.length - 1"
+    step="1"
+    list="tickmarks"
+    [(ngModel)]="currentIndex"
+    (change)="emitValue()"
+    (input)="updateValue()"
+  />
+  <button (click)="nextValue()">&gt;</button>
+  <datalist id="tickmarks">
+    <option *ngFor="let option of options" [value]="option">{{ option }}</option>
+  </datalist>
+</div>
+<div class="controls-row">
+  <label for="slider-input">
+    {{ value }}
+  </label>
+</div>

@@ -1,0 +1,14 @@
+@import '../../styles.scss';
+
+.slider {
+  width: 50%;
+  margin-left: 10px;
+  margin-right: 10px;
+}
+
+.controls-row {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}

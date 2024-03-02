@@ -1,5 +1,5 @@
-import { App } from './ui/app';
+import { bootstrapApplication } from '@angular/platform-browser';
+import { AppComponent } from './app/app.component';
+import { appConfig } from './app/app.config';
 
-const app = new App();
-
-app.start();
+bootstrapApplication(AppComponent, appConfig).catch((err) => console.error(err));
