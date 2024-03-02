@@ -1,7 +1,7 @@
 {
   "hosting": {
     "site": "f1-races",
-    "public": "dist",
+    "public": "dist/f1-races/browser",
     "ignore": ["firebase.json", "**/.*", "**/node_modules/**"]
   }
 }
