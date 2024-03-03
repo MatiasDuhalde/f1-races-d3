@@ -10,9 +10,11 @@
       <app-laps-overview *ngIf="race !== null" [race]="race"></app-laps-overview>
     </div>
     <div id="race-info-container">
-      <div></div>
+      <div id="track-info-container">
+        <app-track-info></app-track-info>
+      </div>
       <div id="driver-info-container">
-        <app-driver-iframe></app-driver-iframe>
+        <app-driver-info></app-driver-info>
       </div>
     </div>
   </div>

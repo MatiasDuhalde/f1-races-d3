@@ -69,6 +69,30 @@ export class DataService {
 
   private worldMap: d3.ExtendedFeatureCollection | undefined = undefined;
 
+  private availableSvg: string[] = [
+    'albert_park',
+    'baku',
+    'hungaroring',
+    'monaco',
+    'ricard',
+    'shanghai',
+    'spa',
+    'americas',
+    'catalunya',
+    'interlagos',
+    'monza',
+    'rodriguez',
+    'silverstone',
+    'villeneuve',
+    'bahrain',
+    'hockenheimring',
+    'marina_bay',
+    'red_bull_ring',
+    'sepang',
+    'sochi',
+    'yas_marina',
+  ];
+
   private constructor() {}
 
   public static getInstance(): DataService {
@@ -216,8 +240,9 @@ export class DataService {
     );
   }
 
-  public async getTrackSvg(circuitRef: string): Promise<HTMLElement> {
-    const xml = await d3.xml(this.getCircuitSvgPath(circuitRef));
-    return xml.documentElement;
+  public async getCircuitSvg(circuitRef: string): Promise<HTMLElement> {
+    circuitRef = this.availableSvg.includes(circuitRef) ? circuitRef : this.availableSvg[0];
+    const xmlDocument = await d3.svg(this.getCircuitSvgPath(circuitRef));
+    return xmlDocument.documentElement;
   }
 }

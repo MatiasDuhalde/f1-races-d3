@@ -100,3 +100,15 @@ button:focus-visible {
   z-index: 300;
   visibility: hidden;
 }
+
+.card {
+  background-color: $background-color-light;
+  border-radius: 8px;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+  padding: 1.5em;
+  margin: 1em;
+  text-align: left;
+  width: 100%;
+  max-width: 400px;
+  transition: box-shadow 0.25s;
+}

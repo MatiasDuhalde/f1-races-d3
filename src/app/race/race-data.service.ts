@@ -41,25 +41,42 @@ export class RaceDataService {
   private raceDataSource = new BehaviorSubject<DriverResult[]>([]);
   raceData$ = this.raceDataSource.asObservable();
 
-  private selectedDriverSource = new BehaviorSubject<Driver | null>(null);
+  private selectedDriverSource = new BehaviorSubject<DriverResult | null>(null);
   selectedDriver$ = this.selectedDriverSource.asObservable();
 
   private availableYears: number[] = [];
   private raceDrivers: Map<number, Driver> = new Map();
   private raceResults: Result[] = [];
 
+  private loading = false;
+
   constructor(private dataService: DataService, private yearService: YearService) {
-    this.yearService.year$.subscribe(() => this.updateRace());
+    this.yearService.year$.subscribe(() => {
+      this.loading = true;
+      this.updateRace()
+        .then(() => {
+          this.loading = false;
+        })
+        .catch(() => {
+          this.loading = false;
+        });
+    });
   }
 
   public async setCircuit(circuit: Circuit | null): Promise<void> {
     this.circuitSource.next(circuit);
+    this.loading = true;
     await this.updateAvailableYears();
     await this.updateRace();
+    this.loading = false;
   }
 
-  public async setSelectedDriver(driver: Driver | null): Promise<void> {
+  public async setSelectedDriver(driver: DriverResult | null): Promise<void> {
     this.selectedDriverSource.next(driver);
+  }
+
+  public isLoading(): boolean {
+    return this.loading;
   }
 
   private async updateRace(): Promise<void> {

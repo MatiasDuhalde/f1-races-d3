@@ -1,0 +1,28 @@
+<div id="driver-info-container">
+  <ng-container *ngIf="driver !== null; else showPrompt">
+    <div class="card">
+      <a [href]="driver.url" target="_blank" rel="noopener noreferrer">
+        <h3>{{ driver.forename }} {{ driver.surname }}</h3>
+      </a>
+      <p>- Nationality: {{ driver.nationality }}</p>
+      <p>- Date of birth: {{ driver.dob.toLocaleDateString() }}</p>
+    </div>
+    <div *ngIf="driver.result !== null" class="card">
+      <h3>Result</h3>
+      <p>- Position: {{ driver.result.positionText }}</p>
+      <p *ngIf="driver.result.milliseconds">
+        - Time: {{ msToTime(driver.result.milliseconds) }}
+        <span *ngIf="driver.result.positionOrder !== 1">({{ driver.result.time }})</span>
+      </p>
+      <p>- Points: {{ driver.result.points }}</p>
+      <p *ngIf="driver.result.time">- Time: {{ driver.result.time }}</p>
+      <p *ngIf="driver.result.fastestLap">
+        - Fastest lap: {{ driver.result.fastestLapTime }} at
+        {{ driver.result.fastestLapSpeed }} km/h (lap {{ driver.result.fastestLap }})
+      </p>
+      <p *ngIf="driver.status">- Status: {{ driver.status }}</p>
+    </div>
+  </ng-container>
+
+  <ng-template #showPrompt><p>Click on a driver to see more details</p></ng-template>
+</div>

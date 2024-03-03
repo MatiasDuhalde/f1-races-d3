@@ -1,9 +1,0 @@
-<div id="iframe-container">
-  <ng-container *ngIf="driver !== null; then showIframe; else showPrompt"> </ng-container>
-
-  <ng-template #showIframe>
-    <iframe id="wikipedia-driver-iframe" [src]="getUrl()"></iframe>
-  </ng-template>
-
-  <ng-template #showPrompt><p>Click on a driver to see more details</p></ng-template>
-</div>

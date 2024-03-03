@@ -1,18 +1,17 @@
 import { CommonModule } from '@angular/common';
 import { Component } from '@angular/core';
 import { DomSanitizer } from '@angular/platform-browser';
-import { Driver } from '../../data/types';
-import { RaceDataService } from '../race-data.service';
+import { DriverResult, RaceDataService } from '../race-data.service';
 
 @Component({
-  selector: 'app-driver-iframe',
+  selector: 'app-driver-info',
   standalone: true,
   imports: [CommonModule],
-  templateUrl: './driver-iframe.component.html',
-  styleUrl: './driver-iframe.component.scss',
+  templateUrl: './driver-info.component.html',
+  styleUrl: './driver-info.component.scss',
 })
-export class DriverIframeComponent {
-  driver: Driver | null = null;
+export class DriverInfoComponent {
+  driver: DriverResult | null = null;
 
   constructor(private raceDataService: RaceDataService, private domSanitizer: DomSanitizer) {}
 
@@ -38,5 +37,9 @@ export class DriverIframeComponent {
 
   private transformToMobileUrl(url: string) {
     return url.replace('wikipedia', 'm.wikipedia');
+  }
+
+  public msToTime(ms: number): string {
+    return new Date(ms).toISOString().slice(11, -1);
   }
 }

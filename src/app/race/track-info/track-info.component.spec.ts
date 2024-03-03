@@ -1,18 +1,18 @@
 import { ComponentFixture, TestBed } from '@angular/core/testing';
 
-import { DriverIframeComponent } from './driver-iframe.component';
+import { TrackInfoComponent } from './track-info.component';
 
-describe('DriverIframeComponent', () => {
-  let component: DriverIframeComponent;
-  let fixture: ComponentFixture<DriverIframeComponent>;
+describe('TrackInfoComponent', () => {
+  let component: TrackInfoComponent;
+  let fixture: ComponentFixture<TrackInfoComponent>;
 
   beforeEach(async () => {
     await TestBed.configureTestingModule({
-      imports: [DriverIframeComponent]
+      imports: [TrackInfoComponent]
     })
     .compileComponents();
     
-    fixture = TestBed.createComponent(DriverIframeComponent);
+    fixture = TestBed.createComponent(TrackInfoComponent);
     component = fixture.componentInstance;
     fixture.detectChanges();
   });
