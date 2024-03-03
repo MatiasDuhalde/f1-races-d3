@@ -136,7 +136,10 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
     const segmentsWidth =
       width - this.margin.left - this.margin.right - this.flagOffset - this.positionOffset;
 
-    const x = d3.scaleLinear().domain([minTime, maxTime]).range([0, segmentsWidth]);
+    const x =
+      minTime === maxTime
+        ? d3.scaleLinear().domain([0, 0]).range([0, 0])
+        : d3.scaleLinear().domain([minTime, maxTime]).range([0, segmentsWidth]);
 
     const refs = this.data.map((entry) => entry.driverRef);
 
@@ -211,15 +214,7 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .append('rect')
       .attr('x', (d) => x(d.totalSegmentDuration) + this.margin.left)
       .attr('y', 0)
-      .attr(
-        'width',
-        (d) =>
-          width -
-          this.margin.left -
-          this.margin.right -
-          this.positionOffset -
-          x(d.totalSegmentDuration),
-      )
+      .attr('width', (d) => segmentsWidth + this.flagOffset - x(d.totalSegmentDuration))
       .attr('height', segmentHeight)
       .attr('fill', (d) => {
         const { result } = d;
@@ -249,7 +244,7 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('text-anchor', 'start')
       .attr('fill', 'white')
       .attr('dominant-baseline', 'middle')
-      .attr('x', x(maxTime) + this.margin.left + this.flagOffset + this.textSpace)
+      .attr('x', segmentsWidth + this.margin.left + this.flagOffset + this.textSpace)
       .attr('y', (d) => y(d.driverRef)! + segmentHeight / 2);
   }
 
