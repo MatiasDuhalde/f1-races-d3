@@ -19,7 +19,6 @@ export class DriverIframeComponent {
   ngOnInit(): void {
     this.raceDataService.selectedDriver$.subscribe((driver) => {
       this.driver = driver;
-      console.log(this.driver);
     });
   }
 

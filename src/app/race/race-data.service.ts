@@ -1,14 +1,31 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { DataService } from '../data/data.service';
-import { Circuit, Driver, LapTime, PitStop, Race, Result } from '../data/types';
+import { Circuit, Driver, Race, Result } from '../data/types';
 import { YearService } from '../year.service';
 
-export type DriverLapData = (LapTime | PitStop) & { start: number };
+export type Segment = {
+  // The number of the lap of the pit stop
+  number: number;
+  // The lap associated with the segment
+  lap: number;
+  // The start millisecond of the segment
+  start: number;
+  // The duration (in milliseconds) of the segment
+  milliseconds: number;
+  // A string representation of the duration
+  durString: string;
+  // The type of the segment
+  type: 'lap' | 'pitstop';
+  // The position of the driver at the end of the segment
+  position?: number;
+};
 
 export type DriverResult = Driver & {
-  duration: number;
-  data: DriverLapData[];
+  totalSegmentDuration: number;
+  segments: Segment[];
+  result: Result | null;
+  status: string;
 };
 
 @Injectable({
@@ -99,9 +116,9 @@ export class RaceDataService {
 
     const raceLapTimes = await this.dataService.getLapTimesByRaceId(race.raceId);
     const racePitStops = await this.dataService.getPitStopsByRaceId(race.raceId);
-    const raceDrivers = await this.dataService.getDriversByRaceId(race.raceId);
+    const statuses = await this.dataService.getStatuses();
 
-    const data = Array.from(raceDrivers.values()).map((driver) => {
+    const data = Array.from(this.raceDrivers.values()).map((driver) => {
       const driverLapTimes = raceLapTimes
         .filter((lapTime) => {
           return lapTime.driverId == driver.driverId;
@@ -123,11 +140,27 @@ export class RaceDataService {
           };
         });
 
-      const data: DriverLapData[] = [...driverLapTimes];
+      const lapTimeSegments: Segment[] = driverLapTimes.map((lapTime) => ({
+        number: lapTime.lap,
+        lap: lapTime.lap,
+        start: 0,
+        milliseconds: lapTime.milliseconds,
+        durString: lapTime.time,
+        type: 'lap',
+        position: lapTime.position,
+      }));
 
-      data.push(...driverPitStops);
+      const pitStopSegments: Segment[] = driverPitStops.map((pitStop) => ({
+        number: pitStop.stop,
+        lap: pitStop.lap,
+        start: 0,
+        milliseconds: pitStop.milliseconds,
+        durString: pitStop.duration,
+        type: 'pitstop',
+        position: undefined,
+      }));
 
-      data.sort((a, b) => {
+      const segments = lapTimeSegments.concat(pitStopSegments).sort((a, b) => {
         const diff = a.lap - b.lap;
         if (diff == 0) {
           return (
@@ -139,34 +172,37 @@ export class RaceDataService {
         return diff;
       });
 
-      let duration = data.length > 0 ? data[0].milliseconds : 0;
-      for (let i = 0; i < data.length - 1; i++) {
-        if (this.isLapTime(data[i + 1])) {
-          duration += data[i + 1].milliseconds;
-          // Le temps de début est le précédent + le temps du tour précédent
-          data[i + 1].start = data[i].start + data[i].milliseconds;
+      let totalSegmentDuration = segments.length > 0 ? segments[0].milliseconds : 0;
+      for (let i = 1; i < segments.length; i++) {
+        if (segments[i].type === 'pitstop') {
+          segments[i].start =
+            segments[i - 1].start + segments[i - 1].milliseconds - segments[i].milliseconds;
         } else {
-          data[i].milliseconds -= data[i + 1].milliseconds;
-          // Ici il faut bien enlever le pitstop du tour (précédent dans la structure de donnée)
-          data[i + 1].start = data[i].start + data[i].milliseconds;
+          totalSegmentDuration += segments[i].milliseconds;
+          segments[i].start = segments[i - 1].start + segments[i - 1].milliseconds;
         }
       }
 
+      const result = this.raceResults.find((res) => res.driverId === driver.driverId) ?? null;
+      const status = result ? statuses.get(result.statusId) ?? '' : '';
+
       return {
         ...driver,
-        data,
-        duration,
+        segments,
+        totalSegmentDuration,
+        result,
+        status,
       };
     });
 
     this.raceDataSource.next(data);
   }
 
-  public isLapTime(entry: LapTime | PitStop) {
-    return 'position' in entry;
+  public isLapTime(entry: Segment) {
+    return entry.type === 'lap';
   }
 
-  public isPitStop(entry: LapTime | PitStop) {
-    return 'stop' in entry;
+  public isPitStop(entry: Segment) {
+    return entry.type === 'pitstop';
   }
 }

@@ -49,7 +49,8 @@ export class DataService {
   // private static readonly QUALIFYING_PATH = DataService.BASE_PATH + 'qualifying' + DataService.CSV_EXTENSION;
   // private static readonly SPRINT_RESULTS_PATH =
   //   DataService.BASE_PATH + 'sprint_results' + DataService.CSV_EXTENSION;
-  // private static readonly STATUS_PATH = DataService.BASE_PATH + 'status' + DataService.CSV_EXTENSION;
+  private static readonly STATUS_PATH =
+    DataService.BASE_PATH + DataService.F1_PREFIX + 'status' + DataService.CSV_EXTENSION;
 
   private static readonly WORLD_MAP_PATH =
     DataService.BASE_PATH + DataService.GEO_PREFIX + 'world_map' + DataService.JSON_EXTENSION;
@@ -64,6 +65,7 @@ export class DataService {
   private results: Result[] = [];
   private lapTimes: LapTime[] = [];
   private pitStops: PitStop[] = [];
+  private statuses: Map<number, string> = new Map();
 
   private worldMap: d3.ExtendedFeatureCollection | undefined = undefined;
 
@@ -186,6 +188,19 @@ export class DataService {
   public async getPitStopsByRaceId(raceId: number): Promise<PitStop[]> {
     const pitStops = await this.getPitStops();
     return pitStops.filter((pitStop) => pitStop.raceId === raceId);
+  }
+
+  public async getStatuses(): Promise<Map<number, string>> {
+    if (this.statuses.size === 0) {
+      const result = await d3.csv(DataService.STATUS_PATH);
+      result.forEach((d) => this.statuses.set(+d['statusId'], d['status']));
+    }
+    return this.statuses;
+  }
+
+  public async getStatus(statusId: number): Promise<string> {
+    const statuses = await this.getStatuses();
+    return statuses.get(statusId) || '';
   }
 
   public async getWorldMapGeoJson(): Promise<d3.ExtendedFeatureCollection> {
