@@ -1,6 +1,7 @@
 import { Circuit, DataService, Race } from '../../data';
 import { App } from '../app';
 import { Slider } from '../components/slider';
+import { TrackStack } from '../components/track-stack';
 import './track.scss';
 import { View } from './view';
 
@@ -12,6 +13,7 @@ export class Track extends View {
 
   private circuit: Circuit;
   private yearSlider: Slider<number> | undefined;
+  private trackStack: TrackStack | undefined;
 
   public constructor(app: App, circuit: Circuit) {
     super(app);
@@ -81,14 +83,13 @@ export class Track extends View {
 
       console.log(race);
     });
+
+    this.trackStack = new TrackStack(this.app, this.circuit);
+    this.trackStack.render(trackMapContainer);
   }
 
   public destroy(): void {
-    const trackContainer = document.getElementById('track-container');
-    if (trackContainer) {
-      trackContainer.remove();
-    }
-
+    this.trackStack?.destroy();
     this.yearSlider?.destroy();
   }
 }

@@ -1,0 +1,46 @@
+@import '../style.scss';
+
+#world-map-container {
+  width: 100%;
+  height: 100%;
+}
+
+#world-map-svg {
+  width: 100%;
+  height: 100%;
+}
+
+.country {
+  fill: $background-color-dark;
+  stroke: $background-color;
+}
+
+.country.active {
+  fill: $primary-color;
+  transition: fill 0.25s ease-in-out;
+}
+
+.country.active:hover {
+  fill: $primary-color-hover;
+}
+
+.circuit-marker {
+  fill: $secodary-color;
+  stroke: $background-color;
+  cursor: pointer;
+  transition: fill 0.25s;
+}
+
+#world-map-tooltip {
+  background: rgba(69, 77, 93, 0.9);
+  border-radius: 0.1rem;
+  display: block;
+  font-size: 11px;
+  max-width: 320px;
+  padding: 0.2rem 0.4rem;
+  position: absolute;
+  text-overflow: ellipsis;
+  white-space: pre;
+  z-index: 300;
+  visibility: hidden;
+}
