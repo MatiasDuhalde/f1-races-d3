@@ -24,6 +24,7 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
   private static TIME_SEGMENTS_GROUP_ID = 'time-segments-group';
   private static DRIVER_NAMES_GROUP_ID = 'driver-names-group';
   private static POSITIONS_GROUP_ID = 'positions-group';
+  private static LEGEND_GROUP_ID = 'legend-group';
   @Input() race: Race;
   @ViewChild('lapsOverviewContainer') lapsOverviewContainerElement: ElementRef<HTMLDivElement>;
   @ViewChild('lapsOverviewTooltip') lapsOverviewTooltipElement: ElementRef<HTMLDivElement>;
@@ -32,17 +33,19 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
   private timeSegmentsGroup: d3.Selection<SVGGElement, undefined, null, undefined>;
   private driverNamesGroup: d3.Selection<SVGGElement, undefined, null, undefined>;
   private positionsGroup: d3.Selection<SVGGElement, undefined, null, undefined>;
+  private legendGroup: d3.Selection<SVGGElement, undefined, null, undefined>;
 
   private data: DriverResult[] = [];
 
   private svgResizeObserver: ResizeObserver = new ResizeObserver(() => this.update());
   private raceDataSubscription: Subscription;
 
-  private margin = { top: 20, right: 20, bottom: 20, left: 160 };
+  private margin = { top: 30, right: 20, bottom: 20, left: 160 };
   private flagOffset = 40;
   private positionOffset = 120;
   private textSpace = 10;
   private lineGap = 2;
+  private legendSpace = 100;
 
   constructor(private raceDataService: RaceDataService) {}
 
@@ -124,6 +127,8 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .append('g')
       .attr('id', LapsOverviewComponent.TIME_SEGMENTS_GROUP_ID);
     this.positionsGroup = this.svg.append('g').attr('id', LapsOverviewComponent.POSITIONS_GROUP_ID);
+
+    this.legendGroup = this.svg.append('g').attr('id', LapsOverviewComponent.LEGEND_GROUP_ID);
   }
 
   private draw(): void {
@@ -219,6 +224,25 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
         const { result } = d;
         if (!result) return '';
         return result.position ? 'url(#checkered)' : 'red';
+      })
+      .on('mouseenter', (_, data) => {
+        const { result } = data;
+        if (!result) return;
+        let text = result.position ? 'Finished' : 'Not finished';
+        if (result.time) {
+          text += ` - ${result.time}`;
+        } else {
+          text += ` - ${data.status}`;
+        }
+        this.lapsOverviewTooltipElement.nativeElement.textContent = text;
+        this.lapsOverviewTooltipElement.nativeElement.style.visibility = 'visible';
+      })
+      .on('mousemove', (event) => {
+        this.lapsOverviewTooltipElement.nativeElement.style.top = `${event.pageY + 20}px`;
+        this.lapsOverviewTooltipElement.nativeElement.style.left = `${event.pageX + 20}px`;
+      })
+      .on('mouseleave', () => {
+        this.lapsOverviewTooltipElement.nativeElement.style.visibility = 'hidden';
       });
 
     this.positionsGroup.selectAll('.position-label').remove();
@@ -244,6 +268,34 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('dominant-baseline', 'middle')
       .attr('x', segmentsWidth + this.margin.left + this.flagOffset + this.textSpace)
       .attr('y', (d) => y(d.driverRef)! + segmentHeight / 2);
+
+    this.legendGroup.selectAll('.legend').remove();
+
+    const individualLegend = this.legendGroup
+      .selectAll('.legend')
+      .data(['Finished', 'Not finished'])
+      .enter()
+      .append('g')
+      .attr('class', 'legend')
+      .attr(
+        'transform',
+        (_, i) => `translate(${this.margin.left + i * this.legendSpace + segmentsWidth / 2}, 0)`,
+      );
+
+    individualLegend
+      .append('rect')
+      .attr('width', 20)
+      .attr('height', 20)
+      .attr('fill', (_, i) => (i === 0 ? 'url(#checkered)' : 'red'))
+      .attr('x', 0)
+      .attr('y', 0);
+
+    individualLegend
+      .append('text')
+      .text((d) => d)
+      .attr('x', 25)
+      .attr('y', 10)
+      .attr('dominant-baseline', 'middle');
   }
 
   private color(entry: Segment): string {
