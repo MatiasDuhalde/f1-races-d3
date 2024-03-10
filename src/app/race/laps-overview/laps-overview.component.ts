@@ -160,7 +160,6 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
       .attr('class', 'driver-name')
       .text((d) => d.surname)
       .attr('text-anchor', 'end')
-      .attr('fill', 'white')
       .attr('dominant-baseline', 'middle')
       .attr('x', this.margin.left - this.textSpace)
       .attr('y', (d) => y(d.driverRef)! + segmentHeight / 2);
@@ -242,7 +241,6 @@ export class LapsOverviewComponent implements OnInit, AfterViewInit, OnDestroy {
         return text;
       })
       .attr('text-anchor', 'start')
-      .attr('fill', 'white')
       .attr('dominant-baseline', 'middle')
       .attr('x', segmentsWidth + this.margin.left + this.flagOffset + this.textSpace)
       .attr('y', (d) => y(d.driverRef)! + segmentHeight / 2);

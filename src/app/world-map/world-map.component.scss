@@ -11,7 +11,7 @@
 }
 
 ::ng-deep .country {
-  fill: $background-color-dark;
+  fill: $secondary-color-hover;
   stroke: $background-color;
 }
 
@@ -25,7 +25,7 @@
 }
 
 ::ng-deep .circuit-marker {
-  fill: $secodary-color;
+  fill: $secondary-color;
   stroke: $background-color;
   cursor: pointer;
   transition: fill 0.25s;
